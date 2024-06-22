@@ -1,6 +1,56 @@
-name: Destroy Infrastructure
+# name: Destroy Infrastructure
+
+# on:
+#   push:
+#     branches:
+#       - master
+#   pull_request:
+#     branches:
+#       - master
+
+# jobs:
+#   terraform:
+#     name: "Infra Deploy"
+#     runs-on: ubuntu-latest
+
+#     steps:
+#       - name: Checkout repository
+#         uses: actions/checkout@v3
+
+#       - name: Setup Terraform
+#         uses: hashicorp/setup-terraform@v2
+#         with:
+#           terraform_version: 1.5.7
+
+#       - name: Configure AWS credentials
+#         uses: aws-actions/configure-aws-credentials@v2
+#         with:
+#           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+#           aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
+#           aws-region: us-east-2
+
+#       - name: Initialize Terraform
+#         run: terraform init
+
+#       - name: Plan Terraform
+#         run: terraform plan
+
+#       - name: Apply Terraform
+#         run: terraform apply -auto-approve
+
+name: Manage Infrastructure
 
 on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: "Choose action: apply or destroy"
+        required: true
+        default: "apply"
+        type: choice
+        options:
+          - apply
+          - destroy
   push:
     branches:
       - master
@@ -10,7 +60,7 @@ on:
 
 jobs:
   terraform:
-    name: "Terraform Destroy"
+    name: "Infra Manage"
     runs-on: ubuntu-latest
 
     steps:
@@ -32,8 +82,18 @@ jobs:
       - name: Initialize Terraform
         run: terraform init
 
-      - name: Plan Terraform
+      - name: Plan Terraform Apply
+        if: ${{ github.event.inputs.action == 'apply' }}
         run: terraform plan
 
       - name: Apply Terraform
+        if: ${{ github.event.inputs.action == 'apply' }}
         run: terraform apply -auto-approve
+
+      - name: Plan Terraform Destroy
+        if: ${{ github.event.inputs.action == 'destroy' }}
+        run: terraform plan -destroy
+
+      - name: Destroy Terraform
+        if: ${{ github.event.inputs.action == 'destroy' }}
+        run: terraform destroy -auto-approve
