@@ -3,11 +3,11 @@ provider "aws" {
   region = "us-east-2"
 }
 
-resource "aws_instance" "web" {
-  ami           = "ami-09040d770ffe2224f"
-  instance_type = "t2.micro"
-  key_name = "new"
+resource "aws_vpc" "main" {
+  cidr_block       = "10.0.0.0/16"
+  instance_tenancy = "default"
+
   tags = {
-    Name = "HelloWorld"
+    Name = "main"
   }
 }
